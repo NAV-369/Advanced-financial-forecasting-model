@@ -1,89 +1,132 @@
 # Advanced Financial Forecasting Model
 
-This project implements an advanced financial analysis and forecasting system for stock market data, focusing on TESLA (TSLA), Bond ETF (BND), and S&P 500 ETF (SPY).
+## Project Overview
+This project implements a sophisticated financial data analysis and forecasting system using advanced time series models and machine learning techniques. The system focuses on analyzing and predicting stock prices for TESLA (TSLA), Bond ETF (BND), and S&P 500 ETF (SPY).
+
+## Key Features
+
+### 1. Advanced Time Series Models
+- **LSTM Neural Networks**
+  - Multi-layer architecture with dropout
+  - Advanced feature engineering
+  - Early stopping and model optimization
+  
+- **SARIMA Models**
+  - Automatic parameter optimization
+  - Seasonal decomposition
+  - Confidence intervals for predictions
+  
+- **Prophet Forecasting**
+  - Multiple seasonality handling
+  - Holiday effects incorporation
+  - Robust to missing data and outliers
+
+### 2. Data Processing & Analysis
+- Automated data retrieval from Yahoo Finance
+- Comprehensive data preprocessing
+- Technical indicator calculation
+- Advanced portfolio metrics
+
+### 3. Visualization & Reporting
+- Interactive time series plots
+- Model comparison visualizations
+- Performance metric dashboards
+- Correlation analysis
 
 ## Project Structure
-
 ```
 project/
 ├── notebooks/
-│   └── data/
-│       ├── TSLA_data.csv
-│       ├── BND_data.csv
-│       └── SPY_data.csv
+│   └── Task-1.ipynb          # Main analysis notebook
 ├── src/
-│   ├── data_processing/
-│   │   ├── data_loader.py
-│   │   └── __init__.py
-│   ├── visualization/
-│   │   ├── plotting.py
-│   │   └── __init__.py
+│   ├── data/
+│   │   └── data_loader.py    # Data loading and preprocessing
 │   ├── analysis/
-│   │   ├── portfolio_analysis.py
-│   │   └── __init__.py
-│   └── main.py
-└── output/
-    ├── plots/
-    └── analysis/
+│   │   ├── forecasting.py    # Time series models
+│   │   └── portfolio.py      # Portfolio analysis
+│   └── visualization/
+│       └── plotting.py       # Visualization functions
+└── requirements.txt          # Project dependencies
 ```
 
-## Features
-
-- Data Processing:
-  - Automated data loading from CSV files
-  - Daily returns calculation
-  - Return statistics computation
-
-- Visualization:
-  - Daily returns comparison
-  - Price trends with moving averages
-  - Return distribution analysis
-  - Risk-return scatter plots
-
-- Analysis:
-  - Portfolio metrics calculation
-  - Risk metrics (Sharpe ratio, Sortino ratio, VaR, CVaR)
-  - Correlation analysis
-  - Rolling metrics computation
-
-## Setup
+## Installation & Setup
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/NAV-369/Advanced-financial-forecasting-model.git
-   cd Advanced-financial-forecasting-model
-   ```
+```bash
+git clone https://github.com/NAV-369/Advanced-financial-forecasting-model.git
+cd Advanced-financial-forecasting-model
+```
 
-2. Install required packages:
-   ```bash
-   pip install pandas numpy scipy matplotlib seaborn statsmodels yfinance
-   ```
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-3. Run the analysis:
-   ```bash
-   python src/main.py
-   ```
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-## Output
+## Usage
 
-The analysis generates various visualizations and metrics saved in the `output` directory:
+The main analysis is conducted in the Jupyter notebook `notebooks/Task-1.ipynb`. This notebook provides an end-to-end workflow:
 
-- Plots:
-  - Daily returns
-  - Price trends
-  - Return distributions
-  - Risk-return analysis
+1. **Data Collection & Preprocessing**
+   - Loading historical stock data
+   - Calculating technical indicators
+   - Data cleaning and validation
 
-- Analysis:
-  - Portfolio metrics
-  - Correlation matrices
-  - Rolling metrics
-  - Portfolio betas
+2. **Exploratory Data Analysis**
+   - Price trend analysis
+   - Return distributions
+   - Correlation studies
+   - Volatility patterns
+
+3. **Model Development & Training**
+   - LSTM model configuration and training
+   - SARIMA parameter optimization
+   - Prophet model setup with seasonality
+
+4. **Forecasting & Evaluation**
+   - Multi-step ahead predictions
+   - Model comparison
+   - Confidence interval analysis
+   - Performance metrics calculation
+
+5. **Portfolio Analysis**
+   - Risk metrics computation
+   - Portfolio optimization
+   - Performance attribution
+
+## Model Details
+
+### LSTM Architecture
+- Multiple LSTM layers with dropout
+- Feature engineering including:
+  - Price levels
+  - Returns
+  - Moving averages
+  - Volatility indicators
+
+### SARIMA Implementation
+- Automatic order selection
+- Seasonal decomposition
+- AIC-based model selection
+- Confidence interval generation
+
+### Prophet Features
+- Multiple seasonality handling
+- Holiday effects
+- Automatic changepoint detection
+- Uncertainty quantification
 
 ## Contributing
-
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+## License
+This project is licensed under the MIT License.

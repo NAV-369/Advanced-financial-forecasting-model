@@ -4,72 +4,76 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from prophet import Prophet
-from typing import Dict, Tuple, List
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+from typing import Dict, Tuple, List, Optional
 import warnings
 warnings.filterwarnings('ignore')
 
-class StockForecaster:
+class TimeSeriesForecaster:
     def __init__(self, window_size: int = 60):
         """
-        Initialize the forecaster with window size for sequence prediction.
+        Initialize the forecaster with multiple models.
         
         Args:
-            window_size (int): Number of time steps to use for prediction
+            window_size (int): Number of time steps for sequence prediction
         """
         self.window_size = window_size
         self.scaler = MinMaxScaler(feature_range=(0, 1))
         self.lstm_model = None
         self.prophet_model = None
+        self.sarima_model = None
+        self.sarima_order = None
+        self.sarima_seasonal_order = None
         
     def prepare_lstm_data(self, data: pd.Series) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Prepare data for LSTM model.
-        
-        Args:
-            data (pd.Series): Time series data
-            
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: X and y arrays for training
+        Prepare data for LSTM model with advanced feature engineering.
         """
         # Scale the data
         scaled_data = self.scaler.fit_transform(data.values.reshape(-1, 1))
         
         X, y = [], []
         for i in range(self.window_size, len(scaled_data)):
-            X.append(scaled_data[i-self.window_size:i, 0])
+            # Include additional features: returns and moving averages
+            window = scaled_data[i-self.window_size:i, 0]
+            returns = np.diff(window) / window[:-1]  # Returns
+            ma5 = np.mean(window[-5:])  # 5-day MA
+            ma20 = np.mean(window[-20:])  # 20-day MA
+            
+            features = np.concatenate([
+                window,
+                returns,
+                [ma5, ma20]
+            ])
+            
+            X.append(features)
             y.append(scaled_data[i, 0])
             
         return np.array(X), np.array(y)
     
     def build_lstm_model(self, input_shape: Tuple[int, int]) -> None:
         """
-        Build LSTM model architecture.
-        
-        Args:
-            input_shape (Tuple[int, int]): Shape of input data
+        Build enhanced LSTM model architecture with additional layers.
         """
         self.lstm_model = Sequential([
-            LSTM(units=50, return_sequences=True, input_shape=input_shape),
+            LSTM(units=100, return_sequences=True, input_shape=input_shape),
+            Dropout(0.2),
+            LSTM(units=50, return_sequences=True),
             Dropout(0.2),
             LSTM(units=50, return_sequences=False),
             Dropout(0.2),
-            Dense(units=25),
+            Dense(units=25, activation='relu'),
             Dense(units=1)
         ])
         
-        self.lstm_model.compile(optimizer='adam', loss='mse')
+        self.lstm_model.compile(
+            optimizer='adam',
+            loss='huber_loss'  # More robust to outliers
+        )
         
     def train_lstm(self, data: pd.Series, epochs: int = 100, batch_size: int = 32) -> dict:
         """
-        Train LSTM model on the data.
-        
-        Args:
-            data (pd.Series): Training data
-            epochs (int): Number of training epochs
-            batch_size (int): Batch size for training
-            
-        Returns:
-            dict: Training history
+        Train LSTM model with validation and early stopping.
         """
         X, y = self.prepare_lstm_data(data)
         X = X.reshape((X.shape[0], X.shape[1], 1))
@@ -77,58 +81,86 @@ class StockForecaster:
         if self.lstm_model is None:
             self.build_lstm_model((X.shape[1], 1))
             
+        from tensorflow.keras.callbacks import EarlyStopping
+        early_stopping = EarlyStopping(
+            monitor='val_loss',
+            patience=10,
+            restore_best_weights=True
+        )
+        
         history = self.lstm_model.fit(
             X, y,
             epochs=epochs,
             batch_size=batch_size,
-            validation_split=0.1,
+            validation_split=0.2,
+            callbacks=[early_stopping],
             verbose=0
         )
         
         return history.history
     
-    def predict_lstm(self, data: pd.Series, forecast_steps: int = 30) -> np.ndarray:
+    def find_optimal_sarima_params(self, data: pd.Series) -> Tuple[tuple, tuple]:
         """
-        Make predictions using the trained LSTM model.
-        
-        Args:
-            data (pd.Series): Input data
-            forecast_steps (int): Number of steps to forecast
-            
-        Returns:
-            np.ndarray: Predicted values
+        Find optimal SARIMA parameters using grid search.
         """
-        # Prepare the last window of data
-        last_window = data[-self.window_size:].values.reshape(-1, 1)
-        last_window = self.scaler.transform(last_window)
+        import itertools
         
-        predictions = []
-        current_window = last_window.copy()
+        p = d = q = range(0, 2)
+        pdq = list(itertools.product(p, d, q))
+        seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
         
-        for _ in range(forecast_steps):
-            # Reshape for LSTM
-            current_window_reshaped = current_window.reshape((1, self.window_size, 1))
-            # Get prediction
-            next_pred = self.lstm_model.predict(current_window_reshaped, verbose=0)
-            predictions.append(next_pred[0, 0])
-            # Update window
-            current_window = np.roll(current_window, -1)
-            current_window[-1] = next_pred
+        best_aic = float('inf')
+        best_order = None
+        best_seasonal_order = None
+        
+        for param in pdq:
+            for param_seasonal in seasonal_pdq:
+                try:
+                    model = SARIMAX(
+                        data,
+                        order=param,
+                        seasonal_order=param_seasonal
+                    )
+                    results = model.fit(disp=0)
+                    
+                    if results.aic < best_aic:
+                        best_aic = results.aic
+                        best_order = param
+                        best_seasonal_order = param_seasonal
+                except:
+                    continue
+                    
+        return best_order, best_seasonal_order
+    
+    def train_sarima(self, data: pd.Series) -> None:
+        """
+        Train SARIMA model with optimal parameters.
+        """
+        if self.sarima_order is None:
+            self.sarima_order, self.sarima_seasonal_order = self.find_optimal_sarima_params(data)
             
-        # Inverse transform predictions
-        predictions = np.array(predictions).reshape(-1, 1)
-        predictions = self.scaler.inverse_transform(predictions)
+        self.sarima_model = SARIMAX(
+            data,
+            order=self.sarima_order,
+            seasonal_order=self.sarima_seasonal_order
+        ).fit(disp=0)
+    
+    def predict_sarima(self, forecast_steps: int = 30) -> pd.Series:
+        """
+        Generate SARIMA predictions with confidence intervals.
+        """
+        forecast = self.sarima_model.get_forecast(steps=forecast_steps)
         
-        return predictions.flatten()
+        return pd.DataFrame({
+            'Prediction': forecast.predicted_mean,
+            'Lower': forecast.conf_int()[:, 0],
+            'Upper': forecast.conf_int()[:, 1]
+        })
     
     def train_prophet(self, data: pd.Series) -> None:
         """
-        Train Prophet model on the data.
-        
-        Args:
-            data (pd.Series): Training data
+        Train Prophet model with additional seasonality and holidays.
         """
-        # Prepare data for Prophet
         df = pd.DataFrame({
             'ds': data.index,
             'y': data.values
@@ -138,20 +170,21 @@ class StockForecaster:
             daily_seasonality=True,
             weekly_seasonality=True,
             yearly_seasonality=True,
-            changepoint_prior_scale=0.05
+            changepoint_prior_scale=0.05,
+            seasonality_prior_scale=10,
+            holidays_prior_scale=10
         )
+        
+        # Add US holidays
+        from prophet.holidays import USFederalHolidays
+        holidays = USFederalHolidays().holidays()
+        self.prophet_model.add_country_holidays(country_name='US')
         
         self.prophet_model.fit(df)
         
     def predict_prophet(self, forecast_steps: int = 30) -> pd.DataFrame:
         """
-        Make predictions using the trained Prophet model.
-        
-        Args:
-            forecast_steps (int): Number of days to forecast
-            
-        Returns:
-            pd.DataFrame: Forecast results
+        Generate Prophet predictions with uncertainty intervals.
         """
         future_dates = self.prophet_model.make_future_dataframe(periods=forecast_steps)
         forecast = self.prophet_model.predict(future_dates)
@@ -161,14 +194,7 @@ class StockForecaster:
 def forecast_portfolio(data: Dict[str, pd.DataFrame], 
                       forecast_days: int = 30) -> Dict[str, Dict[str, pd.DataFrame]]:
     """
-    Generate forecasts for all stocks in the portfolio using both LSTM and Prophet.
-    
-    Args:
-        data (Dict[str, pd.DataFrame]): Dictionary of stock DataFrames
-        forecast_days (int): Number of days to forecast
-        
-    Returns:
-        Dict[str, Dict[str, pd.DataFrame]]: Forecasts for each stock
+    Generate comprehensive forecasts using multiple models.
     """
     forecasts = {}
     
@@ -176,12 +202,17 @@ def forecast_portfolio(data: Dict[str, pd.DataFrame],
         print(f"\nGenerating forecasts for {ticker}...")
         
         # Initialize forecaster
-        forecaster = StockForecaster()
+        forecaster = TimeSeriesForecaster()
         
         # Train and predict with LSTM
         print("Training LSTM model...")
         lstm_history = forecaster.train_lstm(df['Close'])
         lstm_predictions = forecaster.predict_lstm(df['Close'], forecast_days)
+        
+        # Train and predict with SARIMA
+        print("Training SARIMA model...")
+        forecaster.train_sarima(df['Close'])
+        sarima_predictions = forecaster.predict_sarima(forecast_days)
         
         # Train and predict with Prophet
         print("Training Prophet model...")
@@ -197,6 +228,7 @@ def forecast_portfolio(data: Dict[str, pd.DataFrame],
                 ),
                 'Prediction': lstm_predictions
             }).set_index('Date'),
+            'sarima': sarima_predictions,
             'prophet': prophet_predictions.set_index('ds').rename(
                 columns={'yhat': 'Prediction', 'yhat_lower': 'Lower', 'yhat_upper': 'Upper'}
             )

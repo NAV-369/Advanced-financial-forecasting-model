@@ -1,9 +1,14 @@
-pandas>=1.5.0
 numpy>=1.21.0
+pandas>=1.5.0
 matplotlib>=3.5.0
 seaborn>=0.12.0
 yfinance>=0.2.0
 statsmodels>=0.13.0
 scipy>=1.7.0
+scikit-learn>=1.0.0
+tensorflow>=2.8.0
+prophet>=1.1.0
 jupyter>=1.0.0
 notebook>=6.4.0
+pmdarima>=2.0.0  # For auto ARIMA
+optuna>=3.0.0    # For hyperparameter optimization
