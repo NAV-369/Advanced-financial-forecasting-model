@@ -12,3 +12,5 @@ jupyter>=1.0.0
 notebook>=6.4.0
 pmdarima>=2.0.0  # For auto ARIMA
 optuna>=3.0.0    # For hyperparameter optimization
+nbconvert>=7.0.0  # For PDF generation
+pandoc>=2.0.0    # For document conversion
