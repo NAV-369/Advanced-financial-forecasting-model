@@ -8,46 +8,40 @@ import statsmodels.api as sm
 # Set the default style once for all plots
 plt.style.use('fivethirtyeight')  # Using a built-in style that looks professional
 
-def plot_stock_prices(data: Dict[str, pd.DataFrame], save_path: str = None):
+def plot_stock_prices(data: Dict[str, pd.DataFrame], title: str = "Stock Prices") -> None:
     """
     Plot stock prices with moving averages.
     
     Args:
         data (Dict[str, pd.DataFrame]): Dictionary of stock DataFrames
-        save_path (str, optional): Path to save the plot
+        title (str): Plot title
     """
-    plt.figure(figsize=(15, 10))
+    plt.figure(figsize=(15, 8))
     
     for ticker, df in data.items():
         plt.plot(df.index, df['Close'], label=f'{ticker} Close')
         plt.plot(df.index, df['MA50'], label=f'{ticker} 50-day MA', linestyle='--', alpha=0.6)
         plt.plot(df.index, df['MA200'], label=f'{ticker} 200-day MA', linestyle='--', alpha=0.6)
     
-    plt.title('Stock Prices with Moving Averages', fontsize=14, pad=20)
+    plt.title(title, fontsize=14, pad=20)
     plt.xlabel('Date', fontsize=12)
     plt.ylabel('Price ($)', fontsize=12)
     plt.grid(True, alpha=0.3)
     plt.legend(fontsize=10)
-    
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        plt.close()
-    else:
-        plt.show()
+    plt.show()
 
-def plot_daily_returns(data: Dict[str, pd.DataFrame], save_path: str = None):
+def plot_returns_volatility(data: Dict[str, pd.DataFrame]) -> None:
     """
     Plot daily returns and rolling volatility.
     
     Args:
         data (Dict[str, pd.DataFrame]): Dictionary of stock DataFrames
-        save_path (str, optional): Path to save the plot
     """
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 12))
     
     # Plot daily returns
     for ticker, df in data.items():
-        ax1.plot(df.index, df['Daily Return'], label=ticker, alpha=0.7)
+        ax1.plot(df.index, df['Daily_Return'], label=ticker, alpha=0.7)
     
     ax1.set_title('Daily Returns', fontsize=14, pad=20)
     ax1.set_xlabel('Date', fontsize=12)
@@ -66,25 +60,19 @@ def plot_daily_returns(data: Dict[str, pd.DataFrame], save_path: str = None):
     ax2.legend(fontsize=10)
     
     plt.tight_layout()
-    
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        plt.close()
-    else:
-        plt.show()
+    plt.show()
 
-def plot_correlation_matrix(data: Dict[str, pd.DataFrame], save_path: str = None):
+def plot_correlation_matrix(data: Dict[str, pd.DataFrame]) -> None:
     """
     Plot correlation matrix heatmap.
     
     Args:
         data (Dict[str, pd.DataFrame]): Dictionary of stock DataFrames
-        save_path (str, optional): Path to save the plot
     """
     # Create returns DataFrame
     returns_df = pd.DataFrame()
     for ticker, df in data.items():
-        returns_df[ticker] = df['Daily Return']
+        returns_df[ticker] = df['Daily_Return']
     
     # Calculate correlation matrix
     corr_matrix = returns_df.corr()
@@ -99,69 +87,42 @@ def plot_correlation_matrix(data: Dict[str, pd.DataFrame], save_path: str = None
                 fmt='.2f')
     
     plt.title('Correlation Matrix of Daily Returns', fontsize=14, pad=20)
-    
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        plt.close()
-    else:
-        plt.show()
+    plt.show()
 
-def plot_rolling_metrics(data: Dict[str, pd.DataFrame], save_path: str = None):
+def plot_cumulative_returns(data: Dict[str, pd.DataFrame]) -> None:
     """
-    Plot rolling mean and standard deviation.
+    Plot cumulative returns for each stock.
     
     Args:
         data (Dict[str, pd.DataFrame]): Dictionary of stock DataFrames
-        save_path (str, optional): Path to save the plot
     """
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 12))
+    plt.figure(figsize=(15, 8))
     
-    # Plot rolling mean
     for ticker, df in data.items():
-        rolling_mean = df['Daily Return'].rolling(window=30).mean() * 252  # Annualized
-        ax1.plot(df.index, rolling_mean, label=ticker)
+        cum_returns = (1 + df['Daily_Return']).cumprod()
+        plt.plot(df.index, cum_returns, label=ticker)
     
-    ax1.set_title('30-Day Rolling Mean Return (Annualized)', fontsize=14, pad=20)
-    ax1.set_xlabel('Date', fontsize=12)
-    ax1.set_ylabel('Mean Return (%)', fontsize=12)
-    ax1.grid(True, alpha=0.3)
-    ax1.legend(fontsize=10)
-    
-    # Plot rolling standard deviation
-    for ticker, df in data.items():
-        rolling_std = df['Daily Return'].rolling(window=30).std() * np.sqrt(252)  # Annualized
-        ax2.plot(df.index, rolling_std, label=ticker)
-    
-    ax2.set_title('30-Day Rolling Standard Deviation (Annualized)', fontsize=14, pad=20)
-    ax2.set_xlabel('Date', fontsize=12)
-    ax2.set_ylabel('Standard Deviation (%)', fontsize=12)
-    ax2.grid(True, alpha=0.3)
-    ax2.legend(fontsize=10)
-    
-    plt.tight_layout()
-    
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        plt.close()
-    else:
-        plt.show()
+    plt.title('Cumulative Returns', fontsize=14, pad=20)
+    plt.xlabel('Date', fontsize=12)
+    plt.ylabel('Cumulative Return', fontsize=12)
+    plt.grid(True, alpha=0.3)
+    plt.legend(fontsize=10)
+    plt.show()
 
-def plot_risk_return_scatter(data: Dict[str, pd.DataFrame], save_path: str = None):
+def plot_risk_return_scatter(data: Dict[str, pd.DataFrame]) -> None:
     """
     Plot risk-return scatter plot.
     
     Args:
         data (Dict[str, pd.DataFrame]): Dictionary of stock DataFrames
-        save_path (str, optional): Path to save the plot
     """
     returns = []
     risks = []
     tickers = []
     
     for ticker, df in data.items():
-        annual_return = df['Daily Return'].mean() * 252
-        annual_risk = df['Daily Return'].std() * np.sqrt(252)
-        
+        annual_return = df['Daily_Return'].mean() * 252
+        annual_risk = df['Daily_Return'].std() * np.sqrt(252)
         returns.append(annual_return)
         risks.append(annual_risk)
         tickers.append(ticker)
@@ -169,7 +130,6 @@ def plot_risk_return_scatter(data: Dict[str, pd.DataFrame], save_path: str = Non
     plt.figure(figsize=(10, 8))
     plt.scatter(risks, returns, s=100)
     
-    # Add labels for each point
     for i, ticker in enumerate(tickers):
         plt.annotate(ticker, 
                     (risks[i], returns[i]),
@@ -181,12 +141,7 @@ def plot_risk_return_scatter(data: Dict[str, pd.DataFrame], save_path: str = Non
     plt.xlabel('Risk (Annual Volatility)', fontsize=12)
     plt.ylabel('Return (Annual)', fontsize=12)
     plt.grid(True, alpha=0.3)
-    
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        plt.close()
-    else:
-        plt.show()
+    plt.show()
 
 def plot_price_trends(data: Dict[str, pd.DataFrame],
                      figsize: tuple = (12, 6),
