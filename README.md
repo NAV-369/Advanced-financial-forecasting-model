@@ -1,132 +1,54 @@
-# Advanced Financial Forecasting Model
+# Task 1: Preprocess and Explore the Data
 
-## Project Overview
-This project implements a sophisticated financial data analysis and forecasting system using advanced time series models and machine learning techniques. The system focuses on analyzing and predicting stock prices for TESLA (TSLA), Bond ETF (BND), and S&P 500 ETF (SPY).
+## Overview
+This notebook focuses on **loading, cleaning, and exploring financial data** to prepare it for further modeling. We extract historical financial data from YFinance for three assets:
 
-## Key Features
+- **TSLA (Tesla, Inc.)** – High volatility, potential high returns.
+- **BND (Vanguard Total Bond Market ETF)** – Low risk, provides portfolio stability.
+- **SPY (S&P 500 ETF)** – Diversified, moderate-risk market exposure.
 
-### 1. Advanced Time Series Models
-- **LSTM Neural Networks**
-  - Multi-layer architecture with dropout
-  - Advanced feature engineering
-  - Early stopping and model optimization
-  
-- **SARIMA Models**
-  - Automatic parameter optimization
-  - Seasonal decomposition
-  - Confidence intervals for predictions
-  
-- **Prophet Forecasting**
-  - Multiple seasonality handling
-  - Holiday effects incorporation
-  - Robust to missing data and outliers
+## Data Preprocessing
+### 1. Load and Inspect the Data
+- Extract historical stock data using **YFinance**.
+- Ensure all columns have appropriate **data types**.
+- Check for **missing values** and **basic statistics** to understand data distribution.
 
-### 2. Data Processing & Analysis
-- Automated data retrieval from Yahoo Finance
-- Comprehensive data preprocessing
-- Technical indicator calculation
-- Advanced portfolio metrics
+### 2. Handle Missing Values
+- Identify missing values in **Close price**.
+- Apply one of the following strategies:
+  - **Drop** missing values (if minimal impact).
+  - **Interpolate** missing values using linear methods.
+  - **Forward fill/backward fill** if suitable.
 
-### 3. Visualization & Reporting
-- Interactive time series plots
-- Model comparison visualizations
-- Performance metric dashboards
-- Correlation analysis
+### 3. Normalize or Scale Data
+- Normalize data if needed, especially for **machine learning models**.
 
-## Project Structure
-```
-project/
-├── notebooks/
-│   └── Task-1.ipynb          # Main analysis notebook
-├── src/
-│   ├── data/
-│   │   └── data_loader.py    # Data loading and preprocessing
-│   ├── analysis/
-│   │   ├── forecasting.py    # Time series models
-│   │   └── portfolio.py      # Portfolio analysis
-│   └── visualization/
-│       └── plotting.py       # Visualization functions
-└── requirements.txt          # Project dependencies
-```
+## Exploratory Data Analysis (EDA)
+### 1. Visualizing Time-Series Data
+- **Plot closing prices** over time to identify **trends and patterns**.
+- **Calculate & plot daily percentage change** to analyze volatility.
 
-## Installation & Setup
+### 2. Analyze Volatility
+- Compute **rolling means and standard deviations** to detect **short-term trends**.
+- Identify periods of **high and low fluctuations**.
+- Perform **outlier detection** to highlight significant anomalies.
 
-1. Clone the repository:
-```bash
-git clone https://github.com/NAV-369/Advanced-financial-forecasting-model.git
-cd Advanced-financial-forecasting-model
-```
+### 3. Seasonality and Trends
+- Use **time-series decomposition (statsmodels)** to split data into:
+  - **Trend**: Long-term movement.
+  - **Seasonality**: Recurring patterns.
+  - **Residual**: Unexplained variation.
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+### 4. Risk Assessment
+- Analyze **Value at Risk (VaR)** to estimate potential losses.
+- Compute **Sharpe Ratio** to evaluate **risk-adjusted returns**.
+- Document key insights:
+  - Tesla’s stock price trends.
+  - Fluctuations in daily returns and their impact.
+  - Portfolio risk assessment for BND and SPY.
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+## Expected Outcomes
+- A clean dataset **ready for modeling**.
+- Key insights into **volatility, trends, and seasonality**.
+- A strong foundation for **predictive analysis and investment strategy** development.
 
-## Usage
-
-The main analysis is conducted in the Jupyter notebook `notebooks/Task-1.ipynb`. This notebook provides an end-to-end workflow:
-
-1. **Data Collection & Preprocessing**
-   - Loading historical stock data
-   - Calculating technical indicators
-   - Data cleaning and validation
-
-2. **Exploratory Data Analysis**
-   - Price trend analysis
-   - Return distributions
-   - Correlation studies
-   - Volatility patterns
-
-3. **Model Development & Training**
-   - LSTM model configuration and training
-   - SARIMA parameter optimization
-   - Prophet model setup with seasonality
-
-4. **Forecasting & Evaluation**
-   - Multi-step ahead predictions
-   - Model comparison
-   - Confidence interval analysis
-   - Performance metrics calculation
-
-5. **Portfolio Analysis**
-   - Risk metrics computation
-   - Portfolio optimization
-   - Performance attribution
-
-## Model Details
-
-### LSTM Architecture
-- Multiple LSTM layers with dropout
-- Feature engineering including:
-  - Price levels
-  - Returns
-  - Moving averages
-  - Volatility indicators
-
-### SARIMA Implementation
-- Automatic order selection
-- Seasonal decomposition
-- AIC-based model selection
-- Confidence interval generation
-
-### Prophet Features
-- Multiple seasonality handling
-- Holiday effects
-- Automatic changepoint detection
-- Uncertainty quantification
-
-## Contributing
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-This project is licensed under the MIT License.
