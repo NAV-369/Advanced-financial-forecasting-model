@@ -1,61 +1,39 @@
-# Task 2: Develop Time Series Forecasting Models  
+# Task 3: Forecast Future Market Trends
 
-## Overview  
-This task involves building a **time series forecasting model** to predict **Tesla's future stock prices**. The objective is to analyze historical stock prices and develop a model that can accurately forecast future trends.  
+# Overview
+This task involves forecasting Tesla's (TSLA) future stock prices using a pre-trained XGBoost model from Task 2. The goal is to predict prices over a 12-month horizon (252 trading days), analyze the forecast with historical data, and provide insights into trends, volatility, and market opportunities/risks. The forecast is visualized with confidence intervals, and results are interpreted for investment insights.
 
-## Models to Consider  
-You can choose between **classical statistical models** and **deep learning models**:  
+## Objectives
+- **Use the Trained Model for Forecasting**: Generate a 12-month forecast of Tesla’s stock prices using the XGBoost model.
+- **Forecast Analysis**: Visualize the forecast alongside historical data with confidence intervals.
+- **Interpret the Results**:
+  - **Trend Analysis**: Identify long-term trends (upward, downward, or stable) and patterns or anomalies.
+  - **Volatility and Risk**: Assess uncertainty via confidence intervals and highlight potential volatility periods.
+  - **Market Opportunities and Risks**: Outline opportunities (e.g., price increases) and risks (e.g., high volatility or declines).
 
-1. **ARIMA (AutoRegressive Integrated Moving Average)**  
-   - Suitable for univariate time series with **no seasonality**.  
-2. **SARIMA (Seasonal ARIMA)**  
-   - Extends ARIMA to **handle seasonality** in the data.  
-3. **LSTM (Long Short-Term Memory)**  
-   - A type of **Recurrent Neural Network (RNN)** that captures long-term dependencies in time series data.  
+# Prerequisites
+- **Python Environment**: Python 3.9+ with libraries:
+  - `pandas`
+  - `numpy`
+  - `xgboost`
+  - `matplotlib`
+- **Data**: `merged_data.csv` (in `week-11/notebooks/data/`), with historical prices for TSLA, BND, and SPY (e.g., `'nan_x.3'` for TSLA Close).
+- **Model**: Pre-trained XGBoost model (`xgboost_trained_model.json`) in `week-11/`.
 
-## Steps  
+# Implementation
+The implementation leverages an XGBoost model trained on TSLA, BND, and SPY price features. Here’s the process:
 
-### 1. Data Preparation  
-- Load historical Tesla stock price data.  
-- Convert timestamps into a proper date-time format.  
-- Handle missing values and outliers if necessary.  
-- Perform exploratory data analysis (EDA) to understand trends, seasonality, and patterns.  
+## 1. Forecasting with the Trained Model
+- **Input**: Historical data (`merged_data.csv`) and XGBoost model expecting features: `['TSLA_Open', 'TSLA_High', 'TSLA_Low', 'BND_Close', 'BND_High', 'BND_Low', 'SPY_Close', 'SPY_High', 'SPY_Low']`.
+- **Mapping**: TSLA Close is `'nan_x.3'`, with other features from `'nan_x'`, `'nan_y'`, `'Unnamed: 11'`, etc.
+- **Forecast Horizon**: 252 trading days starting March 4, 2025.
+- **Method**: Iterative prediction adjusting TSLA Open/High/Low with predicted Close, using historical averages for BND/SPY.
 
-### 2. Splitting Dataset  
-- **Training Set**: Used to train the model.  
-- **Test Set**: Used to evaluate model performance.  
+## 2. Forecast Analysis
+- **Visualization**: Plot of historical TSLA prices (`'nan_x.3'`), forecast, and 95% confidence intervals (`±1.96 * historical_std`).
+- **Output**: `matplotlib` plot with historical data (blue), forecast (orange), and shaded intervals.
 
-### 3. Model Training  
-- Choose a forecasting model (**ARIMA, SARIMA, or LSTM**).  
-- Train the model using the training set.  
-- Tune hyperparameters using techniques like **Grid Search** or **auto_arima** (for ARIMA models).  
-
-### 4. Forecasting and Evaluation  
-- Use the trained model to **forecast future stock prices**.  
-- Compare predictions with the **actual test data**.  
-- Evaluate model performance using these metrics:  
-  - **Mean Absolute Error (MAE)**  
-  - **Root Mean Squared Error (RMSE)**  
-  - **Mean Absolute Percentage Error (MAPE)**  
-
-### 5. Model Optimization  
-- Fine-tune model parameters to improve accuracy.  
-- Experiment with different values of (p, d, q) for ARIMA/SARIMA.  
-- For LSTM, adjust the **number of layers, neurons, and learning rate**.  
-
-## Tools & Libraries  
-- **pandas** (Data Handling)  
-- **numpy** (Numerical Computations)  
-- **matplotlib / seaborn** (Visualization)  
-- **statsmodels** (ARIMA, SARIMA)  
-- **pmdarima** (auto_arima for parameter tuning)  
-- **TensorFlow/Keras** (For LSTM models)  
-
-## Expected Output  
-- A trained **time series forecasting model** for Tesla stock prices.  
-- Forecasted stock prices for the next period.  
-- Performance evaluation report with **MAE, RMSE, and MAPE** scores.  
-
-## Next Steps  
-- Compare different models to determine the best-performing one.  
-- Extend the project by incorporating external factors like **market sentiment, news analysis, or trading volume** for improved predictions.  
+## 3. Result Interpretation
+- **Trend Analysis**: Checks forecast slope (e.g., upward from $310 to $335) and anomalies (e.g., flatness from static inputs).
+- **Volatility and Risk**: Compares forecast volatility (`std` of predictions) to historical and assesses interval width.
+- **Opportunities and Risks**: Identifies buy/sell points (e.g., 8% gain) and risks (e.g., wide intervals late 2025).
