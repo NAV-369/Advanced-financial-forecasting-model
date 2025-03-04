@@ -1,132 +1,29 @@
-# Advanced Financial Forecasting Model
+# Task 2: Labeling Dataset in CoNLL Format for Named Entity Recognition (NER)
 
-## Project Overview
-This project implements a sophisticated financial data analysis and forecasting system using advanced time series models and machine learning techniques. The system focuses on analyzing and predicting stock prices for TESLA (TSLA), Bond ETF (BND), and S&P 500 ETF (SPY).
+## Overview
+This task involves labeling a portion of the dataset in **CoNLL format** to train a Named Entity Recognition (NER) model. The primary goal is to annotate key entities, such as **products, prices, and locations**, in Amharic text from Ethiopian-based Telegram e-commerce channels.
 
-## Key Features
+## Dataset
+- **Source**: Preprocessed messages from Telegram e-commerce channels.
+- **Format**: Text-based dataset containing product listings, descriptions, prices, and locations.
+- **Language**: Amharic.
 
-### 1. Advanced Time Series Models
-- **LSTM Neural Networks**
-  - Multi-layer architecture with dropout
-  - Advanced feature engineering
-  - Early stopping and model optimization
-  
-- **SARIMA Models**
-  - Automatic parameter optimization
-  - Seasonal decomposition
-  - Confidence intervals for predictions
-  
-- **Prophet Forecasting**
-  - Multiple seasonality handling
-  - Holiday effects incorporation
-  - Robust to missing data and outliers
+## Steps
 
-### 2. Data Processing & Analysis
-- Automated data retrieval from Yahoo Finance
-- Comprehensive data preprocessing
-- Technical indicator calculation
-- Advanced portfolio metrics
+### 1. Data Preparation
+- Extract relevant text messages from the preprocessed dataset.
+- Normalize the text (handling special characters, spacing, and Amharic linguistic variations).
+- Tokenize the text into words.
 
-### 3. Visualization & Reporting
-- Interactive time series plots
-- Model comparison visualizations
-- Performance metric dashboards
-- Correlation analysis
+### 2. Entity Labeling
+- Label tokens using the **BIO tagging** scheme:
+  - `B-Product` (Beginning of a product name)
+  - `I-Product` (Inside a product name)
+  - `B-Price` (Beginning of a price mention)
+  - `I-Price` (Inside a price mention)
+  - `B-Location` (Beginning of a location name)
+  - `I-Location` (Inside a location name)
+  - `O` (Other words that do not belong to any entity)
 
-## Project Structure
-```
-project/
-├── notebooks/
-│   └── Task-1.ipynb          # Main analysis notebook
-├── src/
-│   ├── data/
-│   │   └── data_loader.py    # Data loading and preprocessing
-│   ├── analysis/
-│   │   ├── forecasting.py    # Time series models
-│   │   └── portfolio.py      # Portfolio analysis
-│   └── visualization/
-│       └── plotting.py       # Visualization functions
-└── requirements.txt          # Project dependencies
-```
-
-## Installation & Setup
-
-1. Clone the repository:
-```bash
-git clone https://github.com/NAV-369/Advanced-financial-forecasting-model.git
-cd Advanced-financial-forecasting-model
-```
-
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-## Usage
-
-The main analysis is conducted in the Jupyter notebook `notebooks/Task-1.ipynb`. This notebook provides an end-to-end workflow:
-
-1. **Data Collection & Preprocessing**
-   - Loading historical stock data
-   - Calculating technical indicators
-   - Data cleaning and validation
-
-2. **Exploratory Data Analysis**
-   - Price trend analysis
-   - Return distributions
-   - Correlation studies
-   - Volatility patterns
-
-3. **Model Development & Training**
-   - LSTM model configuration and training
-   - SARIMA parameter optimization
-   - Prophet model setup with seasonality
-
-4. **Forecasting & Evaluation**
-   - Multi-step ahead predictions
-   - Model comparison
-   - Confidence interval analysis
-   - Performance metrics calculation
-
-5. **Portfolio Analysis**
-   - Risk metrics computation
-   - Portfolio optimization
-   - Performance attribution
-
-## Model Details
-
-### LSTM Architecture
-- Multiple LSTM layers with dropout
-- Feature engineering including:
-  - Price levels
-  - Returns
-  - Moving averages
-  - Volatility indicators
-
-### SARIMA Implementation
-- Automatic order selection
-- Seasonal decomposition
-- AIC-based model selection
-- Confidence interval generation
-
-### Prophet Features
-- Multiple seasonality handling
-- Holiday effects
-- Automatic changepoint detection
-- Uncertainty quantification
-
-## Contributing
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-This project is licensed under the MIT License.
+### 3. Formatting in CoNLL Style
+Each token should be annotated in the following format:
